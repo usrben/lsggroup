@@ -34,11 +34,12 @@ std::list<std::string> members::list_all()
         access_token = oauth_->refresh_access_token();
     }
 
-    request << network::header("Authorization", "Bearer " + oauth_->get_access_token());
+    request << network::header("Authorization", "Bearer " + access_token);
 
-    std::istringstream response_stream(network::http::body(client.get(request)));
+    auto response = client.get(request);
+    std::istringstream response_stream(network::http::body(response));
 
-    //std::cout << network::http::body(response);
+//    std::cout << network::http::body(response);
 
     std::list<std::string> emails;
 

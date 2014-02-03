@@ -4,11 +4,13 @@
 #include <string>
 #include <utility>
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 #include "google/oauth2.hpp"
 #include "google/directory/members.hpp"
 
 using namespace usrben::google;
 namespace po = boost::program_options;
+namespace filesystem = boost::filesystem;
 
 struct options
 {
@@ -24,38 +26,41 @@ struct options
     std::pair<std::string, std::string> group_key;
 };
 
-void get_options(int argc, char *argv[], options & ops);
+void get_options(int argc, char *argv[], const std::string & config_file_name, options & ops);
 template <typename T>
 T get_option(const po::variables_map & vm, const std::string & option_name);
 
 int main(int argc, char *argv[])
 {
-    // Group list scope:
-    // https://www.googleapis.com/auth/admin.directory.group.readonly
-    //
-    // Gmail contacts scope
-    // https://www.google.com/m8/feeds
-
     const std::string scope = "https://www.googleapis.com/auth/admin.directory.group.readonly";
+    const std::string config_file_name = "lsggroup.cfg";
 
-    options ops;
-    get_options(argc, argv, ops);
-
-    auto oauth2_ptr = std::make_shared<oauth2>(ops.client_id.second, ops.client_secret.second, scope, "oauth2.txt");
-
-    auto directory_members = directory::members(oauth2_ptr, ops.group_key.second);
-
-    auto emails = directory_members.list_all();
-
-    for (auto email : emails)
+    try
     {
-        std::cout << email << "\n";
+        options ops;
+        get_options(argc, argv, config_file_name, ops);
+
+        auto oauth2_ptr = std::make_shared<oauth2>(ops.client_id.second, ops.client_secret.second, scope, "oauth2.txt");
+
+        auto directory_members = directory::members(oauth2_ptr, ops.group_key.second);
+
+        auto emails = directory_members.list_all();
+
+        for (auto email : emails)
+        {
+            std::cout << email << "\n";
+        }
+    }
+    catch (std::exception &e)
+    {
+        std::cerr << e.what() << "\n";
+        return EXIT_FAILURE;
     }
 
     return 0;
 }
 
-void get_options(int argc, char *argv[], options & ops)
+void get_options(int argc, char *argv[], const std::string & config_file_name, options & ops)
 {
     //Declare the supported options.
     po::options_description desc("Allowed options");
@@ -67,13 +72,18 @@ void get_options(int argc, char *argv[], options & ops)
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::store(po::parse_config_file<char>("lsggroup.cfg", desc), vm);
+
+    if (filesystem::exists(config_file_name))
+    {
+        po::store(po::parse_config_file<char>("lsggroup.cfg", desc), vm);
+    }
+
     po::notify(vm);
    
     if (vm.count("help"))
     {
         std::cout << desc << "\n";
-        exit(0);
+        std::exit(0);
     }
 
     ops.client_id.second = get_option<std::string>(vm, ops.client_id.first);
@@ -91,7 +101,7 @@ T get_option(const po::variables_map & vm, const std::string & option_name)
     else
     {
         std::cerr << "Missing required option: " << option_name << std::endl;
-        std::exit(1);
+        std::exit(EXIT_FAILURE);
     }
 }
 

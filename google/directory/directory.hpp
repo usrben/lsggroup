@@ -5,7 +5,7 @@
 
 namespace usrben { namespace google { namespace directory
 {
-    const std::string api_base_url = "https://www.googleapis.com/admin/directory/v1";
+    extern const std::string api_base_url;
 } // namespace directory
 
 } // namespace google

@@ -1,6 +1,7 @@
 #ifndef USRBEN_GOOGLE_UTILITY_JSON_HPP
 #define USRBEN_GOOGLE_UTILITY_JSON_HPP
 
+#include <sstream>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -22,7 +23,9 @@ namespace usrben { namespace google { namespace utility
 
         if (pt.find("error") != pt.not_found())
         {
-            throw json_error(pt.get<std::string>("error"));
+            std::ostringstream strout;
+            property_tree::write_json(strout, pt);
+            throw json_error(strout.str());
         }
     }
 }; // namespace utility

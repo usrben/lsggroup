@@ -17,15 +17,6 @@ namespace usrben { namespace google { namespace directory
         std::list<std::string> list_all();
          
     private:
-        struct member
-        {
-            std::string kind;
-            std::string etag;
-            std::string id;
-            std::string email;
-            std::string role;
-            std::string type;
-        };
 
         std::string group_key_;
         std::shared_ptr<usrben::google::oauth2> oauth_;
