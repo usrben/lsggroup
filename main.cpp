@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cstdio>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -19,7 +20,8 @@ struct options
         client_id("client-id", ""),
         client_secret("client-secret", ""),
         group_key("group-key", ""),
-        user_id("user-id", "")
+        user_id("user-id", ""),
+        csv("csv", false)
     {
     }
 
@@ -27,6 +29,7 @@ struct options
     std::pair<std::string, std::string> client_secret;
     std::pair<std::string, std::string> group_key;
     std::pair<std::string, std::string> user_id;
+    std::pair<std::string, bool> csv;
 };
 
 void get_options(int argc, char *argv[], const std::string & config_file_name, options & ops);
@@ -40,6 +43,9 @@ int main(int argc, char *argv[])
     const std::string directory_oauth_file = "directory-oauth2.txt";
     const std::string contacts_oauth_file = "contacts-oauth2.txt";
     const std::string config_file_name = "lsggroup.cfg";
+    const std::string csv_delimiter = ",";
+    const std::string csv_email_heading = "Email";
+    const std::string csv_name_heading = "Name";
 
     try
     {
@@ -51,20 +57,47 @@ int main(int argc, char *argv[])
                     ops.client_secret.second, 
                     directory_scope, "directory-oauth2.txt");
 
-        auto contacts_oauth_ptr = 
-            std::make_shared<oauth2>(ops.client_id.second, 
-                    ops.client_secret.second, contacts_scope, 
-                    "contacts-oauth2.txt");
-
         directory_members members_api(directory_oauth_ptr, ops.group_key.second);
         auto emails = members_api.list_all();
 
-        contacts contacts_api(contacts_oauth_ptr, ops.user_id.second);
-        auto member_contacts = contacts_api.get_email_names(emails);
 
-        for (auto contact : member_contacts)
+        if (!ops.user_id.second.empty())
         {
-            std::cout << contact.first << ", " << contact.second << "\n";
+            auto contacts_oauth_ptr = 
+                std::make_shared<oauth2>(ops.client_id.second, 
+                        ops.client_secret.second, contacts_scope, 
+                        "contacts-oauth2.txt");
+
+            contacts contacts_api(contacts_oauth_ptr, ops.user_id.second);
+            auto member_contacts = contacts_api.get_email_names(emails);
+
+            if (ops.csv.second)
+            {
+                std::cout << csv_email_heading << csv_delimiter << csv_name_heading << "\n";
+                for (auto contact : member_contacts)
+                {
+                    std::cout << contact.first << csv_delimiter << "\"" << contact.second << "\"\n";
+                }
+            }
+            else
+            {
+                for (auto contact : member_contacts)
+                {
+                    // TODO: field width could be dynamic based on longest email address
+                    std::printf("%-50s%s\n", contact.first.c_str(), contact.second.c_str());
+                }
+            }
+        }
+        else // just print email addresses
+        {
+            if (ops.csv.second)
+            {
+                std::cout << csv_email_heading << "\n";
+            }
+            for (auto email : emails)
+            {
+                std::cout << email << "\n";
+            }
         }
     }
     catch (std::exception &e)
@@ -85,7 +118,8 @@ void get_options(int argc, char *argv[], const std::string & config_file_name, o
         (ops.client_id.first.c_str(), po::value<std::string>(), "Google API client ID")
         (ops.client_secret.first.c_str(), po::value<std::string>(), "Google API client secret")
         (ops.group_key.first.c_str(), po::value<std::string>(), "Group ID (e.g., mygroup@example.com)")
-        (ops.user_id.first.c_str(), po::value<std::string>(), "User ID (e.g., john.doe@gmail.com)");
+        (ops.user_id.first.c_str(), po::value<std::string>(), "User ID (e.g., john.doe@gmail.com)")
+        (ops.csv.first.c_str(), "Enable CSV formatting");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -106,7 +140,11 @@ void get_options(int argc, char *argv[], const std::string & config_file_name, o
     ops.client_id.second = get_option<std::string>(vm, ops.client_id.first);
     ops.client_secret.second = get_option<std::string>(vm, ops.client_secret.first);
     ops.group_key.second = get_option<std::string>(vm, ops.group_key.first);
-    ops.user_id.second = get_option<std::string>(vm, ops.user_id.first);
+    if (vm.count(ops.user_id.first))
+    {
+        ops.user_id.second = get_option<std::string>(vm, ops.user_id.first);
+    }
+    ops.csv.second = vm.count("csv");
 }
 
 template <typename T>

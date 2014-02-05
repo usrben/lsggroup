@@ -26,15 +26,6 @@ std::map<std::string, std::string>
     std::map<std::string, std::string> requested_contacts;
     for (auto contact : pt.get_child("feed.entry"))
     {
-        /*
-        auto emails = contact.second.get_child("gd$email");
-        if (emails.begin() != emails.end())
-        {
-            all_contacts[emails.begin()->second.get<std::string>("address")] =
-                contact.second.get<std::string>("title.$t"); 
-        }
-        */
-
         if (contact.second.find("gd$email") != contact.second.not_found())
         {
             auto emails = contact.second.get_child("gd$email");
