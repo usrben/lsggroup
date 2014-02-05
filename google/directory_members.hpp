@@ -19,7 +19,6 @@ namespace usrben { namespace google
         std::list<std::string> list_all();
          
     private:
-
         std::string group_key_;
         std::shared_ptr<usrben::google::oauth2> oauth_;
     };

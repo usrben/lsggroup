@@ -38,26 +38,33 @@ namespace usrben { namespace google { namespace utility { namespace http
     }
 
     inline http_response get_json(const std::string & url,
-            std::shared_ptr<oauth2> & oauth)
+            std::shared_ptr<oauth2> & oauth, 
+            const std::list<std::pair<std::string, std::string>> & headers)
     {
         http_client client;
         auto request = http_request(url);
         set_authorization_header(request, oauth);
+        for (auto header : headers)
+        {
+            request << boost::network::header(header.first, header.second);
+        }
+
         return client.get(request);
     }
 
     inline void get_json_refresh_token(const std::string & url, 
             std::shared_ptr<oauth2> & oauth,
+            const std::list<std::pair<std::string, std::string>> & headers,
             boost::property_tree::ptree & pt)
     {
-        auto response = get_json(url, oauth);
+        auto response = get_json(url, oauth, headers);
 
         auto status_code = boost::network::http::status(response);
         if (status_code >= status_client_error &&
             status_code < status_server_error) 
         {
             oauth->refresh_access_token();
-            response = get_json(url, oauth);
+            response = get_json(url, oauth, headers);
         }
         else if (status_code < status_success ||
                  status_code >= status_redirect)

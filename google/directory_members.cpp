@@ -21,7 +21,7 @@ std::list<std::string> directory_members::list_all()
         group_key_ + "/members";
 
     ptree pt;
-    utility::http::get_json_refresh_token(url, oauth_, pt);
+    utility::http::get_json_refresh_token(url, oauth_, {}, pt);
 
     std::list<std::string> emails;
     for (auto m : pt.get_child("members"))

@@ -15,7 +15,7 @@ namespace usrben { namespace google
         contacts(const std::shared_ptr<oauth2> & oauth, 
             const std::string & user_id);
         std::map<std::string, std::string> 
-            get_names(const std::list<std::string> & email_list);
+            get_email_names(const std::list<std::string> & email_list);
     private:
         std::shared_ptr<oauth2> oauth_;
         std::string user_id_;

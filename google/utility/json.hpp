@@ -20,6 +20,7 @@ namespace usrben { namespace google { namespace utility { namespace json
         boost::property_tree::ptree & pt)
     {
         boost::property_tree::read_json(json_stream, pt);
+//        boost::property_tree::write_json(std::cout, pt);
 
         if (pt.find("error") != pt.not_found())
         {

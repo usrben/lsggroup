@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
         auto emails = members_api.list_all();
 
         contacts contacts_api(contacts_oauth_ptr, ops.user_id.second);
-        auto member_contacts = contacts_api.get_names(emails);
+        auto member_contacts = contacts_api.get_email_names(emails);
 
         for (auto contact : member_contacts)
         {
