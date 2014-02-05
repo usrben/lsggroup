@@ -6,7 +6,8 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include "google/oauth2.hpp"
-#include "google/directory/members.hpp"
+#include "google/directory_members.hpp"
+#include "google/contacts.hpp"
 
 using namespace usrben::google;
 namespace po = boost::program_options;
@@ -17,13 +18,15 @@ struct options
     options() : 
         client_id("client-id", ""),
         client_secret("client-secret", ""),
-        group_key("group-key", "")
+        group_key("group-key", ""),
+        user_id("user-id", "")
     {
     }
 
     std::pair<std::string, std::string> client_id;
     std::pair<std::string, std::string> client_secret;
     std::pair<std::string, std::string> group_key;
+    std::pair<std::string, std::string> user_id;
 };
 
 void get_options(int argc, char *argv[], const std::string & config_file_name, options & ops);
@@ -32,7 +35,10 @@ T get_option(const po::variables_map & vm, const std::string & option_name);
 
 int main(int argc, char *argv[])
 {
-    const std::string scope = "https://www.googleapis.com/auth/admin.directory.group.readonly";
+    const std::string directory_scope = "https://www.googleapis.com/auth/admin.directory.group.readonly";
+    const std::string contacts_scope = "https://www.google.com/m8/feeds";
+    const std::string directory_oauth_file = "directory-oauth2.txt";
+    const std::string contacts_oauth_file = "contacts-oauth2.txt";
     const std::string config_file_name = "lsggroup.cfg";
 
     try
@@ -40,15 +46,25 @@ int main(int argc, char *argv[])
         options ops;
         get_options(argc, argv, config_file_name, ops);
 
-        auto oauth2_ptr = std::make_shared<oauth2>(ops.client_id.second, ops.client_secret.second, scope, "oauth2.txt");
+        auto directory_oauth_ptr = 
+            std::make_shared<oauth2>(ops.client_id.second, 
+                    ops.client_secret.second, 
+                    directory_scope, "directory-oauth2.txt");
 
-        auto directory_members = directory::members(oauth2_ptr, ops.group_key.second);
+        auto contacts_oauth_ptr = 
+            std::make_shared<oauth2>(ops.client_id.second, 
+                    ops.client_secret.second, contacts_scope, 
+                    "contacts-oauth2.txt");
 
-        auto emails = directory_members.list_all();
+        directory_members members_api(directory_oauth_ptr, ops.group_key.second);
+        auto emails = members_api.list_all();
 
-        for (auto email : emails)
+        contacts contacts_api(contacts_oauth_ptr, ops.user_id.second);
+        auto member_contacts = contacts_api.get_names(emails);
+
+        for (auto contact : member_contacts)
         {
-            std::cout << email << "\n";
+            std::cout << contact.first << ", " << contact.second << "\n";
         }
     }
     catch (std::exception &e)
@@ -68,7 +84,8 @@ void get_options(int argc, char *argv[], const std::string & config_file_name, o
         ("help", "Display help message")
         (ops.client_id.first.c_str(), po::value<std::string>(), "Google API client ID")
         (ops.client_secret.first.c_str(), po::value<std::string>(), "Google API client secret")
-        (ops.group_key.first.c_str(), po::value<std::string>(), "Group ID (e.g., mygroup@example.com)");
+        (ops.group_key.first.c_str(), po::value<std::string>(), "Group ID (e.g., mygroup@example.com)")
+        (ops.user_id.first.c_str(), po::value<std::string>(), "User ID (e.g., john.doe@gmail.com)");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -89,6 +106,7 @@ void get_options(int argc, char *argv[], const std::string & config_file_name, o
     ops.client_id.second = get_option<std::string>(vm, ops.client_id.first);
     ops.client_secret.second = get_option<std::string>(vm, ops.client_secret.first);
     ops.group_key.second = get_option<std::string>(vm, ops.group_key.first);
+    ops.user_id.second = get_option<std::string>(vm, ops.user_id.first);
 }
 
 template <typename T>

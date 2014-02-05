@@ -135,7 +135,7 @@ std::string oauth2::post_token(const std::string &request_body)
 std::istream& usrben::google::operator>>(std::istream & access_token_stream, oauth2_access_token & access_token)
 {
     boost::property_tree::ptree pt;
-    utility::read_json_throw_error(access_token_stream, pt);
+    utility::json::read_throw_error(access_token_stream, pt);
 
     access_token.access_token = pt.get<std::string>("access_token"),
     access_token.expires_in = pt.get<int>("expires_in"),

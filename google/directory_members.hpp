@@ -5,14 +5,16 @@
 #include <memory>
 #include <list>
 
-#include "../oauth2.hpp"
+#include "oauth2.hpp"
 
-namespace usrben { namespace google { namespace directory
+namespace usrben { namespace google
 {
-    class members
+    class directory_members
     {
     public:
-        members(std::shared_ptr<usrben::google::oauth2> oauth, const std::string & group_key);
+        directory_members(
+            const std::shared_ptr<usrben::google::oauth2> & oauth, 
+            const std::string & group_key);
 
         std::list<std::string> list_all();
          
@@ -21,8 +23,6 @@ namespace usrben { namespace google { namespace directory
         std::string group_key_;
         std::shared_ptr<usrben::google::oauth2> oauth_;
     };
-} // namespace directory
-
 } // namespace google
 
 } // namespace usrben
