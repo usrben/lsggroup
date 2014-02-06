@@ -41,6 +41,7 @@ lsggroup (see options below).
 Command-line options
 --------------------
 The following command-line options are supported (available through --help)
+
     --help                Print help message 
     --client-id arg       Google API client ID (REQUIRED)
     --client-secret arg   Google API client secret (REQUIRED)
@@ -73,5 +74,4 @@ Repeat this a second time for the Google account where you want to retrieve
 the names associated with the email addresses.  
 *NOTE*: If you do not provide 'user-id' option, you will not be prompted
         a second time and only a list of email addresses will be printed out.
-
 
