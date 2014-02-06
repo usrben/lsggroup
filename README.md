@@ -41,37 +41,36 @@ lsggroup (see options below).
 Command-line options
 --------------------
 The following command-line options are supported (available through --help)
---help                Print help message 
---client-id arg       Google API client ID (REQUIRED)
---client-secret arg   Google API client secret (REQUIRED)
---group-key arg       Google Apps Group ID (e.g., mygroup@mydomain.com) 
-                      (REQUIRED)
---user-id arg         User ID (e.g., john.doe@gmail.com) (OPTIONAL)
---csv                 Enable CSV formatting (OPTIONAL)
+    --help                Print help message 
+    --client-id arg       Google API client ID (REQUIRED)
+    --client-secret arg   Google API client secret (REQUIRED)
+    --group-key arg       Google Apps Group ID (e.g., mygroup@mydomain.com) (REQUIRED)
+    --user-id arg         User ID (e.g., john.doe@gmail.com) (OPTIONAL)
+    --csv                 Enable CSV formatting (OPTIONAL)
 
 Config file
 -----------
-All of the command-line options can also be saved in a file named 
-'lsggroup.cfg' in the same directory as the executable. The config file 
+All of the command-line options can also be saved in a file named
+'lsggroup.cfg' in the same directory as the executable. The config file
 contains key-value pairs. Note that command-line options take precedence
 if the option appears on both the command-line and the config file.
 
 Example config file contents:
 
-client-id = MY-CLIENT-ID
-client-secret = MY-CLIENT-SECRET
-group-key = MY-GROUP-KEY
-user-id = MY-USER-ID
-csv =
+    client-id = MY-CLIENT-ID
+    client-secret = MY-CLIENT-SECRET
+    group-key = MY-GROUP-KEY
+    user-id = MY-USER-ID
+    csv =
 
 Running
 -------
 When running lsggroup for the first time, your default browser will be opened
-twice, each time prompting you to give access to a Google account.
+twice, each time prompting you to give access to a Google account.  
 The first time, give access to your Google Apps domain account and copy the
-resulting code into the terminal beside "Access code: " and hit Enter.
+resulting code into the terminal beside "Access code: " and hit Enter.  
 Repeat this a second time for the Google account where you want to retrieve
-the names associated with the email addresses.
+the names associated with the email addresses.  
 *NOTE*: If you do not provide 'user-id' option, you will not be prompted
         a second time and only a list of email addresses will be printed out.
 
